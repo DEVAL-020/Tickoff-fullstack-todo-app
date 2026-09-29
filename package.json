@@ -1,0 +1,32 @@
+{
+  "name": "today-todo",
+  "version": "1.0.0",
+  "description": "A handwritten-notebook to-do app with login (Express, PostgreSQL, React, Framer Motion, GSAP)",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "build": "esbuild client/app.jsx --jsx=transform --minify --outfile=public/app.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "framer-motion": "^10.18.0",
+    "gsap": "^3.12.5",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}
