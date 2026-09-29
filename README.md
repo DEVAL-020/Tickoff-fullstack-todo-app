@@ -1,10 +1,10 @@
-# Today
+# Tickoff-To-Do-App
 
 A handwritten-notebook to-do app with accounts. React, Framer Motion and GSAP on the front end, Express and PostgreSQL on the back end.
 
 - Sign up and sign in, with passwords hashed by bcrypt and a 7-day session in an httpOnly cookie
 - Tasks belong to each user: add, edit, tick off, delete, drag to reorder, clear finished
-- Fluid animated background, light and dark mode, works on mobile
+- Fluid animated background, light and dark mode, works on mobile also.
 
 ## Run it locally
 
@@ -42,24 +42,3 @@ schema.sql   Database tables
 | PATCH / DELETE | /api/todos/:id | Update / delete a task |
 | PUT | /api/todos/reorder | Save order (`{ ids: [...] }`) |
 | DELETE | /api/todos/completed | Remove finished tasks |
-
-## Deploy
-
-Works on Render, Railway, Fly.io or any Node host. Set `DATABASE_URL`, `JWT_SECRET`, `NODE_ENV=production`, and `PGSSL=true` if your database requires SSL. Serve it over HTTPS so the session cookie is sent as secure.
-
-## Push to GitHub
-
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/<you>/<repo>.git
-git push -u origin main
-```
-
-`.env` and `node_modules` are already in `.gitignore`.
-
-## Security notes
-
-Login and register are rate limited, inputs are validated on the server, and all queries are parameterized. Sessions use `SameSite=Lax` cookies. If you later add a separate front-end domain, add CSRF tokens.
