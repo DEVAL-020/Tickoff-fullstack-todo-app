@@ -1,0 +1,9 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "public",
+  "functions": {
+    "api/[...path].js": {
+      "includeFiles": ["schema.sql"]
+    }
+  }
+}

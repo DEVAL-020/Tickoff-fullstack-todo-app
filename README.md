@@ -42,3 +42,18 @@ schema.sql   Database tables
 | PATCH / DELETE | /api/todos/:id | Update / delete a task |
 | PUT | /api/todos/reorder | Save order (`{ ids: [...] }`) |
 | DELETE | /api/todos/completed | Remove finished tasks |
+
+## Deploy to Vercel
+
+The frontend is built as static files and the Express API runs as a Vercel Function. Vercel does not provide PostgreSQL, so create a hosted PostgreSQL database first (for example, Neon or Supabase) and use its pooled connection URL when available.
+
+1. Push this project to GitHub and import the repository in Vercel.
+2. Add these Project Environment Variables for Production (and Preview if needed):
+	- `DATABASE_URL`: the hosted PostgreSQL connection string.
+	- `JWT_SECRET`: a random secret with at least 16 characters.
+	- `PGSSL`: `true` if your database requires SSL.
+3. Deploy. Vercel runs `npm run build`, serves `public/`, and routes `/api/*` to the serverless Express handler. The tables in `schema.sql` are initialized on the first API request.
+
+The app and API share the same Vercel domain, so its httpOnly session cookie works without cross-origin configuration. Keep `DATABASE_URL` and `JWT_SECRET` out of source control; `.env` is ignored locally.
+
+For local development, continue to use `docker compose up -d`, configure `.env`, then run `npm start`.
