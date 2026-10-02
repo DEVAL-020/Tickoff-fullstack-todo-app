@@ -246,6 +246,52 @@ h1 {
     color: var(--pen)
 }
 
+.task-tools {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 8px;
+}
+
+.search {
+    flex: 1;
+    min-width: 0;
+}
+
+.search input,
+.task-tools select {
+    width: 100%;
+    min-height: 38px;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 6px 9px;
+    font: 600 .9rem var(--f2);
+}
+
+.task-tools select {
+    width: auto;
+    max-width: 45%;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.api-error {
+    margin: 0 0 10px;
+    color: #B42318;
+    font-weight: 700;
+}
+
 .prog b {
     font-weight: 700
 }

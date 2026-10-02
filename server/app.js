@@ -6,18 +6,32 @@ const { router: authRouter } = require("./auth");
 const todosRouter = require("./todos");
 
 const secret = process.env.JWT_SECRET || "";
-if (secret.length < 16 || secret.startsWith("change-me")) {
-  throw new Error("Set a long random JWT_SECRET in the deployment environment.");
+if (secret.length < 32 || secret.startsWith("change-me")) {
+  throw new Error("Set a random JWT_SECRET with at least 32 characters.");
 }
 
 const app = express();
 app.set("trust proxy", 1);
+const sameOriginMutation = (req, res, next) => {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
+
+  try {
+    const origin = new URL(req.get("origin"));
+    const expected = new URL(`${req.protocol}://${req.get("host")}`);
+    if (origin.origin === expected.origin && req.get("sec-fetch-site") !== "cross-site") {
+      return next();
+    }
+  } catch (e) {
+    // Requests without a valid browser origin are not allowed to mutate state.
+  }
+  res.status(403).json({ error: "Request origin is not allowed." });
+};
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
+        scriptSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["https://fonts.gstatic.com"],
         imgSrc: ["'self'", "data:"],
@@ -32,6 +46,7 @@ app.use(
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 
+app.use("/api", sameOriginMutation);
 app.use("/api/auth", authRouter);
 app.use("/api/todos", todosRouter);
 app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));

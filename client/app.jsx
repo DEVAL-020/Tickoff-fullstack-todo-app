@@ -88,12 +88,15 @@ function Item({ t, onToggle, onDelete, onEdit }) {
 function Todos({ user, onLogout }) {
   const [todos, setTodos] = useState([]);
   const [filter, setFilter] = useState("All");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [query, setQuery] = useState("");
+  const [error, setError] = useState("");
   const [text, setText] = useState("");
   const [cat, setCat] = useState("Work");
   const [pri, setPri] = useState(1);
   const inp = useRef();
 
-  useEffect(() => { api("/todos").then((d) => setTodos(d.todos)).catch(() => { }); }, []);
+  useEffect(() => { api("/todos").then((d) => setTodos(d.todos)).catch((e) => setError(e.message)); }, []);
   useEffect(() => {
     if (RM) return;
     gsap.from(".hero > *", { y: 18, opacity: 0, duration: 0.7, stagger: 0.1, ease: "power3.out" });
@@ -104,15 +107,22 @@ function Todos({ user, onLogout }) {
   const add = async () => {
     const v = text.trim();
     if (!v) { inp.current.focus(); return; }
-    try { const { todo } = await api("/todos", "POST", { text: v, cat, pri }); setTodos((p) => [todo, ...p]); } catch (e) { return; }
+    setError("");
+    try { const { todo } = await api("/todos", "POST", { text: v, cat, pri }); setTodos((p) => [todo, ...p]); } catch (e) { setError(e.message); return; }
     setText(""); if (filter === "Done") setFilter("All");
     inp.current.focus();
   };
   const done = todos.filter((t) => t.done).length;
   const left = todos.length - done;
   const pct = todos.length ? Math.round((done / todos.length) * 100) : 0;
-  const shown = todos.filter((t) => filter === "All" || (filter === "Done") === t.done);
-  const sync = (p) => p.catch(() => api("/todos").then((d) => setTodos(d.todos)).catch(() => { }));
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const shown = todos.filter((t) => (filter === "All" || (filter === "Done") === t.done)
+    && (categoryFilter === "All" || t.cat === categoryFilter)
+    && t.text.toLocaleLowerCase().includes(normalizedQuery));
+  const sync = (p) => p.then(() => setError("")).catch((e) => {
+    setError(e.message);
+    api("/todos").then((d) => setTodos(d.todos)).catch(() => { });
+  });
   const upd = (id, patch) => { setTodos((p) => p.map((t) => (t.id === id ? { ...t, ...patch } : t))); sync(api("/todos/" + id, "PATCH", patch)); };
   const remove = (id) => { setTodos((p) => p.filter((t) => t.id !== id)); sync(api("/todos/" + id, "DELETE")); };
   const clearDone = () => { setTodos((p) => p.filter((t) => !t.done)); sync(api("/todos/completed", "DELETE")); };
@@ -127,7 +137,9 @@ function Todos({ user, onLogout }) {
   const hello = h < 12 ? "Morning," : h < 18 ? "Afternoon," : "Evening,";
   const date = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
   const sub = todos.length === 0 ? "A blank page. Nice." : left === 0 ? "Everything's crossed off. Take a breather." : left === 1 ? "Just one thing left." : left + " things on the list.";
-  const empty = { All: "Nothing written yet. Jot something on the sticky note.", Active: "All done here. Go enjoy your day.", Done: "Nothing crossed off yet. You'll get there." }[filter];
+  const empty = normalizedQuery || categoryFilter !== "All"
+    ? "No tasks match these filters."
+    : { All: "Nothing written yet. Jot something on the sticky note.", Active: "All done here. Go enjoy your day.", Done: "Nothing crossed off yet. You'll get there." }[filter];
 
   return (
     <main className="wrap">
@@ -156,6 +168,17 @@ function Todos({ user, onLogout }) {
 
       <section className="page">
         <Progress pct={pct} done={done} total={todos.length} />
+        {error && <p className="api-error" role="alert">{error}</p>}
+        <div className="task-tools">
+          <label className="search">
+            <span className="sr-only">Search tasks</span>
+            <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search tasks" />
+          </label>
+          <select aria-label="Filter by category" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+            <option value="All">All categories</option>
+            {Object.keys(CATS).map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
         <LayoutGroup>
           <nav className="tabs" aria-label="Show tasks">
             {["All", "Active", "Done"].map((f) => (
